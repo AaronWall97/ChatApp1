@@ -7,6 +7,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 
+
 class SignInActivity : AppCompatActivity() {
 
     private var googleSignInClient : GoogleSignInClient? = null
@@ -26,7 +27,9 @@ class SignInActivity : AppCompatActivity() {
 
         googleSignInClient = GoogleSignIn.getClient(this@SignInActivity,gso)
 
-        set
+        sign_in_button
+
+
 
 
 
