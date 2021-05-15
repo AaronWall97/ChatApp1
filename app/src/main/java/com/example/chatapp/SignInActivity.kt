@@ -11,6 +11,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
@@ -42,7 +43,7 @@ class SignInActivity : AppCompatActivity() {
 
         googleSignInClient = GoogleSignIn.getClient(this@SignInActivity,gso)
 
-        findViewById<Button>(R.id.sign_in_button).setOnClickListener{
+        findViewById<SignInButton>(R.id.sign_in_button).setOnClickListener{
             signIn()
         }
     }
@@ -81,6 +82,8 @@ class SignInActivity : AppCompatActivity() {
                     if (task.isSuccessful){
                         startActivity(Intent(this@SignInActivity, MainActivity::class.java))
                         finish()
+                    }else{
+                        Toast.makeText(this@SignInActivity,"Authentication Failed", Toast.LENGTH_SHORT).show()
                     }
                 }
 
