@@ -5,11 +5,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DatabaseReference
 
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener {
@@ -31,6 +33,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     private var fireBaseUser : FirebaseUser? = null
 
     private var googleApiClient : GoogleApiClient? = null
+
+    private var firebaseDatabaseReference : DatabaseReference? = null
+    private var firebaseAdapter : FirebaseRecyclerAdapter<Message, MessageViewHolder>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
