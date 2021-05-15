@@ -8,10 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -132,6 +129,14 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         findViewById<RecyclerView>(R.id.recycler_view)!!.layoutManager = linearLayoutManager
         findViewById<RecyclerView>(R.id.recycler_view)!!.adapter = firebaseAdapter
 
+        findViewById<Button>(R.id.send_button).setOnClickListener {
+            val message = Message(findViewById<EditText>(R.id.text_message_edit_text)!!.text.toString(), userName!!, userPhotoUrl, null)
+
+            firebaseDatabaseReference!!.child(MESSAGE_CHILD).push().setValue(message)
+
+            (findViewById<EditText>(R.id.text_message_edit_text)!!.setText(""))
+        }
+
     }
 
     class MessageViewHolder(v : View) : RecyclerView.ViewHolder(v){
@@ -147,7 +152,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             messageTextView = itemView.findViewById(R.id.message_text_view)
             messageImageView = itemView.findViewById(R.id.message_image_view)
             nameTextView = itemView.findViewById(R.id.name_text_view)
-            userImage = itemView.findViewById(R.id.name_text_view)
+            userImage = itemView.findViewById(R.id.messenger_image_view)
 
         }
 
@@ -200,6 +205,16 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         }
 
 
+    }
+
+    override fun onPause() {
+        super.onPause()
+        firebaseAdapter!!.stopListening()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        firebaseAdapter!!.startListening()
     }
 
 

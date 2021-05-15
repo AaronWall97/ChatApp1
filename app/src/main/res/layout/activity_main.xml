@@ -42,7 +42,8 @@
         app:layout_constraintTop_toTopOf="@+id/guideline" android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginEnd="8dp" android:layout_marginRight="8dp"
-        tools:text="@string/message_hint_string"/>
+        tools:text="@string/message_hint_string"
+        android:autofillHints="" />
     <Button
         android:layout_width="wrap_content"
         android:layout_height="50dp"
