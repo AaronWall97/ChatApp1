@@ -4,7 +4,9 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
+import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.common.ConnectionResult
@@ -60,6 +62,11 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                 userPhotoUrl = fireBaseUser!!.photoUrl!!.toString()
             }
         }
+    }
+
+    class MessageViewHolder(v : View) : RecyclerView.ViewHolder(v){
+
+
     }
 
 
