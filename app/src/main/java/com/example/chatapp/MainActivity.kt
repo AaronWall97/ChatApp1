@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         const val TAG = "MainActivity"
         const val ANONYMOUS = "anonymous"
         const val MESSAGE_CHILD = "messages"
+        const val REQUEST_IMAGE = 1
     }
 
     override fun onConnectionFailed(connectionResult: ConnectionResult) {
@@ -135,6 +136,14 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             firebaseDatabaseReference!!.child(MESSAGE_CHILD).push().setValue(message)
 
             (findViewById<EditText>(R.id.text_message_edit_text)!!.setText(""))
+        }
+
+        findViewById<EditText>(R.id.add_image_image_view).setOnClickListener{
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+            intent.addCategory(Intent.CATEGORY_OPENABLE)
+
+            intent.type = "image/*"
+            startActivityForResult(intent, REQUEST_IMAGE)
         }
 
     }
