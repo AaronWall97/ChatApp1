@@ -1,5 +1,6 @@
 package com.example.chatapp
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -35,6 +36,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         const val ANONYMOUS = "anonymous"
         const val MESSAGE_CHILD = "messages"
         const val REQUEST_IMAGE = 1
+        const val LOADING_IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif"
     }
 
     override fun onConnectionFailed(connectionResult: ConnectionResult) {
@@ -146,6 +148,19 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             startActivityForResult(intent, REQUEST_IMAGE)
         }
 
+        fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+            super.onActivityResult(requestCode, resultCode, data)
+
+           if (requestCode == REQUEST_IMAGE){
+               if(resultCode == Activity.RESULT_OK){
+                   if(data != null){
+                       val uri = data.data
+
+                       val tempMessage = Message(null, userName, userPhotoUrl, LOADING_IMAGE_URL)
+                   }
+               }
+           }
+        }
     }
 
     class MessageViewHolder(v : View) : RecyclerView.ViewHolder(v){
