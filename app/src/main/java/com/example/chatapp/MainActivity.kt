@@ -23,9 +23,11 @@ import com.google.android.gms.common.api.GoogleApiClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import de.hdodenhof.circleimageview.CircleImageView
 
 
@@ -48,7 +50,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     private var userPhotoUrl : String? = null
 
     private var fireBashAuth : FirebaseAuth? = null
-    private var fireBaseUser : FirebaseUser? = null
+    private var firebaseUser : FirebaseUser? = null
 
     private var googleApiClient : GoogleApiClient? = null
 
@@ -67,30 +69,29 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         firebaseDatabaseReference = FirebaseDatabase.getInstance().reference
 
         googleApiClient = GoogleApiClient.Builder(this)
-            .enableAutoManage(this, this)
-            .addApi(Auth.GOOGLE_SIGN_IN_API)
-            .build()
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API)
+                .build()
 
         userName = ANONYMOUS
         fireBashAuth = FirebaseAuth.getInstance()
-        fireBaseUser = fireBashAuth!!.currentUser
+        firebaseUser = fireBashAuth!!.currentUser
 
-        if (fireBaseUser == null) {
+        if (firebaseUser == null) {
             startActivity(Intent(this@MainActivity, SignInActivity::class.java))
             finish()
-        }else{
-            userName = fireBaseUser!!.displayName
+        } else {
+            userName = firebaseUser!!.displayName
 
-            if (fireBaseUser!!.photoUrl != null){
-                userPhotoUrl = fireBaseUser!!.photoUrl!!.toString()
+            if (firebaseUser!!.photoUrl != null) {
+                userPhotoUrl = firebaseUser!!.photoUrl!!.toString()
             }
         }
 
-        val parser = SnapshotParser<Message>{
-            snapshot : DataSnapshot ->
+        val parser = SnapshotParser<Message> { snapshot: DataSnapshot ->
 
             val chatMessage = snapshot.getValue(Message::class.java)
-            if (chatMessage != null){
+            if (chatMessage != null) {
                 chatMessage.id = snapshot.key
             }
             chatMessage!!
@@ -99,10 +100,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         val messageRefs = firebaseDatabaseReference!!.child(MESSAGE_CHILD)
 
         val options = FirebaseRecyclerOptions.Builder<Message>()
-            .setQuery(messageRefs, parser)
-            .build()
+                .setQuery(messageRefs, parser)
+                .build()
 
-        firebaseAdapter = object : FirebaseRecyclerAdapter<Message, MessageViewHolder>(options){
+        firebaseAdapter = object : FirebaseRecyclerAdapter<Message, MessageViewHolder>(options) {
             override fun onCreateViewHolder(viewGroup: ViewGroup, p1: Int): MessageViewHolder {
                 val inflater = LayoutInflater.from(viewGroup.context)
                 return MessageViewHolder(inflater.inflate(R.layout.item_message, viewGroup, false))
@@ -116,13 +117,13 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 
         }
 
-        firebaseAdapter!!.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){
+        firebaseAdapter!!.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                 super.onItemRangeInserted(positionStart, itemCount)
                 val messageCount = firebaseAdapter!!.itemCount
                 val lastVisiblePosition = linearLayoutManager.findLastCompletelyVisibleItemPosition()
 
-                if (lastVisiblePosition == -1 || positionStart >= messageCount - 1 && lastVisiblePosition == positionStart - 1){
+                if (lastVisiblePosition == -1 || positionStart >= messageCount - 1 && lastVisiblePosition == positionStart - 1) {
                     findViewById<RecyclerView>(R.id.recycler_view)!!.scrollToPosition(positionStart)
                 }
             }
@@ -140,15 +141,16 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             (findViewById<EditText>(R.id.text_message_edit_text)!!.setText(""))
         }
 
-        findViewById<EditText>(R.id.add_image_image_view).setOnClickListener{
+        findViewById<ImageView>(R.id.add_image_image_view).setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             intent.addCategory(Intent.CATEGORY_OPENABLE)
 
             intent.type = "image/*"
             startActivityForResult(intent, REQUEST_IMAGE)
         }
+    }
 
-        fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+       override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
             super.onActivityResult(requestCode, resultCode, data)
 
            if (requestCode == REQUEST_IMAGE){
@@ -157,9 +159,45 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                        val uri = data.data
 
                        val tempMessage = Message(null, userName, userPhotoUrl, LOADING_IMAGE_URL)
+                       firebaseDatabaseReference!!.child(MESSAGE_CHILD).push().setValue(tempMessage){
+                           databaseError, databaseReference ->
+                           if (databaseError == null){
+                               val key = databaseReference.key
+                               val storageReference = FirebaseStorage.getInstance()
+                                       .getReference(firebaseUser!!.uid)
+                                       .child(key!!)
+                                       .child(uri?.lastPathSegment!!)
+
+
+
+                               putImageInStorage(storageReference,uri,key)
+                           }else{
+                               Log.e(TAG, "Unable to write message to database ${databaseError.toException()}")
+                           }
                    }
                }
            }
+        }
+    }
+
+    private fun putImageInStorage(storageReference: StorageReference, uri : Uri?, key : String?){
+        val uploadTask = storageReference.putFile(uri!!)
+        uploadTask.continueWithTask{
+            task ->
+            if (!task.isSuccessful){
+                throw task.exception!!
+            }
+            storageReference.downloadUrl
+        }.addOnCompleteListener{
+            task ->
+            if (task.isSuccessful){
+                val downloadUrl = task.result!!.toString()
+                val message = Message(null,userName, userPhotoUrl, downloadUrl)
+
+                firebaseDatabaseReference!!.child(MESSAGE_CHILD).child(key!!).setValue(message)
+            }else{
+                Log.e(TAG, "Image upload task was not successful ${task.exception}")
+            }
         }
     }
 
