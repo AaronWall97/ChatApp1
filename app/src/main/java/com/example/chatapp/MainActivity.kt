@@ -6,10 +6,7 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -53,7 +50,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     private var userName : String? = null
     private var userPhotoUrl : String? = null
 
-    private var fireBashAuth : FirebaseAuth? = null
+    private var fireBaseAuth : FirebaseAuth? = null
     private var firebaseUser : FirebaseUser? = null
 
     private var googleApiClient : GoogleApiClient? = null
@@ -80,8 +77,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                 .build()
 
         userName = ANONYMOUS
-        fireBashAuth = FirebaseAuth.getInstance()
-        firebaseUser = fireBashAuth!!.currentUser
+        fireBaseAuth = FirebaseAuth.getInstance()
+        firebaseUser = fireBaseAuth!!.currentUser
 
         if (firebaseUser == null) {
             startActivity(Intent(this@MainActivity, SignInActivity::class.java))
@@ -280,6 +277,24 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         }
 
 
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item?.itemId){
+            R.id.sign_out_item ->{
+                fireBaseAuth!!.signOut()
+                fireBaseAuth = null
+                userName = ANONYMOUS
+                userPhotoUrl = null
+
+                googleSignInClient!!.revokeAccess().addOnCompleteListener(this@MainActivity){
+                    startActivity(Intent(this@MainActivity, SignInActivity::class.java))
+                    finish()
+                }
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onPause() {
