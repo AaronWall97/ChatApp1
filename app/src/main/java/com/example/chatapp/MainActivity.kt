@@ -83,6 +83,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         if (firebaseUser == null) {
             startActivity(Intent(this@MainActivity, SignInActivity::class.java))
             finish()
+            return
         } else {
             userName = firebaseUser!!.displayName
 
@@ -98,7 +99,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 
         googleSignInClient = GoogleSignIn.getClient(this@MainActivity, gso)
 
-        val parser = SnapshotParser<Message> { snapshot: DataSnapshot ->
+        val parser = SnapshotParser<Message> {
+            snapshot: DataSnapshot ->
 
             val chatMessage = snapshot.getValue(Message::class.java)
             if (chatMessage != null) {
@@ -176,7 +178,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                                val storageReference = FirebaseStorage.getInstance()
                                        .getReference(firebaseUser!!.uid)
                                        .child(key!!)
-                                       .child(uri!!.lastPathSegment!!)
+                                       .child(uri?.lastPathSegment!!)
 
 
 
@@ -254,6 +256,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                                 .load(downloadUrl)
                                 .into(messageImageView)
 
+
                         }else{
                             Log.e(TAG, "Getting Download url was not successful ${task.exception}")
                         }
@@ -262,6 +265,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                     Glide.with(messageImageView.context)
                         .load(Uri.parse(message.imageUrl))
                         .into(messageImageView)
+
                 }
             }
 
