@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -18,6 +19,9 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.firebase.ui.database.FirebaseRecyclerOptions
 import com.firebase.ui.database.SnapshotParser
 import com.google.android.gms.auth.api.Auth
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.firebase.auth.FirebaseAuth
@@ -59,6 +63,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     private var firebaseDatabaseReference : DatabaseReference? = null
     private var firebaseAdapter : FirebaseRecyclerAdapter<Message, MessageViewHolder>? = null
 
+    private var googleSignInClient : GoogleSignInClient? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -87,6 +93,13 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                 userPhotoUrl = firebaseUser!!.photoUrl!!.toString()
             }
         }
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build()
+
+        googleSignInClient = GoogleSignIn.getClient(this@MainActivity, gso)
 
         val parser = SnapshotParser<Message> { snapshot: DataSnapshot ->
 
@@ -166,7 +179,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                                val storageReference = FirebaseStorage.getInstance()
                                        .getReference(firebaseUser!!.uid)
                                        .child(key!!)
-                                       .child(uri?.lastPathSegment!!)
+                                       .child(uri!!.lastPathSegment!!)
 
 
 
@@ -277,6 +290,12 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     override fun onResume() {
         super.onResume()
         firebaseAdapter!!.startListening()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.overflow_menu, menu)
+        return true
     }
 
 
